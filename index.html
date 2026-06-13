@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALPR - Panel de Control & Guía Técnica</title>
+
+    <!-- Google Fonts - Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --primary-light: #eff6ff;
+            --sidebar-bg: #111827;
+            --sidebar-text: #9ca3af;
+            --sidebar-text-active: #ffffff;
+            --sidebar-active-bg: #1f2937;
+            --bg-light: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Layout Wrapper */
+        .app-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text-active);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar-brand {
+            padding: 24px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar-logo {
+            width: 42px;
+            height: 42px;
+            background-color: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 1.4rem;
+        }
+
+        .sidebar-brand-text h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0;
+            color: white;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-brand-text p {
+            font-size: 0.75rem;
+            margin: 0;
+            color: var(--sidebar-text);
+        }
+
+        .sidebar-menu {
+            flex-grow: 1;
+            padding: 24px 16px;
+            list-style: none;
+            margin: 0;
+        }
+
+        .sidebar-item {
+            margin-bottom: 8px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 0.925rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .sidebar-link:hover {
+            color: var(--sidebar-text-active);
+            background-color: rgba(255,255,255,0.03);
+        }
+
+        .sidebar-link.active {
+            color: white;
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+
+        .sidebar-link i {
+            font-size: 1.15rem;
+        }
+
+        /* User Profile in Sidebar */
+        .sidebar-profile {
+            padding: 16px;
+            margin: 16px;
+            background-color: rgba(255,255,255,0.02);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .profile-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background-color: var(--primary-hover);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .profile-text h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin: 0;
+            color: white;
+        }
+
+        .profile-text p {
+            font-size: 0.725rem;
+            margin: 0;
+            color: var(--sidebar-text);
+        }
+
+        /* Main Area Layout */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            min-width: 0;
+        }
+
+        /* Header */
+        .top-header {
+            height: 72px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+        }
+
+        .header-title h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-date-pill {
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notification-btn:hover {
+            color: var(--text-main);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            background-color: #ef4444;
+            border-radius: 50%;
+        }
+
+        /* Body Area */
+        .content-body {
+            padding: 32px;
+            flex-grow: 1;
+            background-color: #f9fafb;
+        }
+
+        /* Premium Card Design */
+        .premium-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02), 0 1px 3px rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .premium-card-header {
+            padding: 20px 24px;
+            background-color: transparent;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .premium-card-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .premium-card-body {
+            padding: 24px;
+        }
+
+        /* Interactive File Upload Area */
+        .upload-zone {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 36px 20px;
+            text-align: center;
+            background-color: #f9fafb;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary-color);
+            background-color: var(--primary-light);
+        }
+
+        .upload-zone input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-zone-icon {
+            font-size: 2.25rem;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+        }
+
+        .upload-zone-text {
+            font-size: 0.925rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .upload-zone-subtext {
+            font-size: 0.775rem;
+            color: var(--text-muted);
+        }
+
+        .selected-file-pill {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            font-weight: 500;
+        }
+
+        /* Button & Loading Animation */
+        .premium-btn {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2), 0 2px 4px -1px rgba(59, 130, 246, 0.1);
+        }
+
+        .premium-btn:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.25), 0 4px 6px -2px rgba(59, 130, 246, 0.1);
+        }
+
+        .premium-btn:disabled {
+            background-color: #cbd5e1;
+            box-shadow: none;
+            cursor: not-allowed;
+            color: #94a3b8;
+        }
+
+        /* Vehicle Plate Display Style from Image */
+        .plate-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ffffff;
+            border: 1.5px solid #c7d2fe;
+            color: #1e293b;
+            font-family: 'SFMono-Regular', Consolas, "Liberation Mono", Menlo, monospace;
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding: 6px 16px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(79, 70, 229, 0.05);
+            letter-spacing: 0.5px;
+        }
+
+        /* Table Design */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .premium-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .premium-table th {
+            background-color: #f9fafb;
+            color: var(--text-muted);
+            font-size: 0.775rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .premium-table td {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.875rem;
+            color: var(--text-main);
+            vertical-align: middle;
+            text-align: left;
+        }
+
+        .premium-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .premium-table tbody tr {
+            transition: background-color 0.2s;
+        }
+
+        .premium-table tbody tr:hover {
+            background-color: #f9fafb;
+        }
+
+        /* Miniatures */
+        .vehicle-thumbnail {
+            width: 64px;
+            height: 44px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .vehicle-thumbnail-placeholder {
+            width: 64px;
+            height: 44px;
+            background-color: #f3f4f6;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 1.15rem;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Confidence indicator styling */
+        .confidence-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .dot-indicator {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        .dot-green {
+            background-color: #10b981;
+            box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+        }
+
+        .dot-yellow {
+            background-color: #f59e0b;
+            box-shadow: 0 0 6px rgba(245, 158, 11, 0.4);
+        }
+
+        .dot-red {
+            background-color: #ef4444;
+            box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Animation */
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .spin-animation {
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        /* Guide steps card */
+        .guide-step-card {
+            border-left: 4px solid var(--primary-color) !important;
+            background-color: #f9fafb;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .guide-step-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .guide-code-block {
+            background-color: #0f172a !important;
+            color: #cbd5e1 !important;
+            border-radius: 12px !important;
+            border: 1px solid rgba(255,255,255,0.05) !important;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2) !important;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991.98px) {
+            .app-wrapper {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+            .sidebar-profile {
+                margin: 10px 16px;
+            }
+            .top-header {
+                padding: 0 20px;
+            }
+            .content-body {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" class="app-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <!-- Brand/Logo -->
+        <div class="sidebar-brand">
+            <div class="sidebar-logo">
+                <i class="bi bi-car-front-fill"></i>
+            </div>
+            <div class="sidebar-brand-text">
+                <h1>LPR System</h1>
+                <p>Lectura de Matrículas</p>
+            </div>
+        </div>
+
+        <!-- Menu -->
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <button class="sidebar-link" :class="{ active: vistaActual === 'dashboard' }" @click="vistaActual = 'dashboard'">
+                    <i class="bi bi-speedometer2"></i>
+                    Panel de Control
+                </button>
+            </li>
+            <li class="sidebar-item">
+                <button class="sidebar-link" :class="{ active: vistaActual === 'guia' }" @click="vistaActual = 'guia'">
+                    <i class="bi bi-terminal"></i>
+                    Guía de Despliegue
+                </button>
+            </li>
+
+            <!-- Visually matched sidebar components from the layout image (designed for look and feel, set as disabled) -->
+            <li class="sidebar-item mt-4">
+                <span class="text-uppercase px-3 font-monospace text-muted" style="font-size: 0.65rem; letter-spacing: 1.2px; font-weight: 700; opacity: 0.6;">Módulos del Sistema</span>
+            </li>
+            <li class="sidebar-item">
+                <button class="sidebar-link opacity-50" disabled style="cursor: not-allowed;">
+                    <i class="bi bi-broadcast"></i>
+                    Lecturas en tiempo real
+                </button>
+            </li>
+            <li class="sidebar-item">
+                <button class="sidebar-link opacity-50" disabled style="cursor: not-allowed;">
+                    <i class="bi bi-clock-history"></i>
+                    Historial de lecturas
+                </button>
+            </li>
+            <li class="sidebar-item">
+                <button class="sidebar-link opacity-50" disabled style="cursor: not-allowed;">
+                    <i class="bi bi-search"></i>
+                    Buscar matrícula
+                </button>
+            </li>
+            <li class="sidebar-item">
+                <button class="sidebar-link opacity-50" disabled style="cursor: not-allowed;">
+                    <i class="bi bi-camera-video"></i>
+                    Cámaras activas
+                </button>
+            </li>
+        </ul>
+
+        <!-- User Profile Footer -->
+        <div class="sidebar-profile">
+            <div class="profile-info">
+                <div class="profile-avatar">AD</div>
+                <div class="profile-text">
+                    <h4>Admin</h4>
+                    <p>Administrador</p>
+                </div>
+            </div>
+            <i class="bi bi-chevron-down text-muted" style="font-size: 0.75rem;"></i>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="top-header">
+            <div class="header-title">
+                <h2>{{ vistaActual === 'dashboard' ? 'Panel de Control' : 'Guía de Despliegue (VS Code)' }}</h2>
+            </div>
+            <div class="header-actions">
+                <div class="header-date-pill">
+                    <i class="bi bi-calendar3"></i>
+                    <span>{{ fechaFormateada }}</span>
+                </div>
+                <button class="notification-btn">
+                    <i class="bi bi-bell"></i>
+                    <span class="notification-badge"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content Body -->
+        <div class="content-body">
+
+            <!-- VIEW: DASHBOARD -->
+            <div v-if="vistaActual === 'dashboard'" class="fade-in">
+                <div class="row g-4">
+
+                    <!-- Left Column: Carga e IA -->
+                    <div class="col-lg-5 col-12">
+                        <div class="premium-card">
+                            <div class="premium-card-header">
+                                <h3 class="premium-card-title">
+                                    <i class="bi bi-cpu text-primary"></i>
+                                    Control de Acceso Vehicular (ALPR)
+                                </h3>
+                            </div>
+                            <div class="premium-card-body">
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold text-secondary small mb-2">Seleccionar fotografía del vehículo:</label>
+
+                                    <!-- Interactive upload zone -->
+                                    <div class="upload-zone">
+                                        <input type="file" accept="image/*" @change="manejarSubidaImagen">
+                                        <div class="upload-zone-icon">
+                                            <i class="bi bi-cloud-arrow-up"></i>
+                                        </div>
+                                        <div class="upload-zone-text">Arrastra una imagen o haz clic</div>
+                                        <div class="upload-zone-subtext">Formatos soportados: JPG, PNG, WEBP</div>
+                                    </div>
+
+                                    <!-- Selected file indicator -->
+                                    <div v-if="archivoSeleccionado" class="text-center mb-3">
+                                        <div class="selected-file-pill">
+                                            <i class="bi bi-image text-primary"></i>
+                                            <span>{{ archivoSeleccionado.name }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="premium-btn w-100 mb-4" @click="procesarImagen" :disabled="estaProcesando || !archivoSeleccionado">
+                                    <span v-if="estaProcesando" class="d-flex align-items-center justify-content-center gap-2">
+                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                        Analizando con IA (YOLO + OCR)...
+                                    </span>
+                                    <span v-else class="d-flex align-items-center justify-content-center gap-2">
+                                        <i class="bi bi-search"></i>
+                                        Escanear Matrícula con IA
+                                    </span>
+                                </button>
+
+                                <!-- Preview Area -->
+                                <div v-if="vistaPrevia" class="mb-4 text-center">
+                                    <p class="text-muted small text-start fw-semibold mb-2">Vista previa de la imagen:</p>
+                                    <img :src="vistaPrevia" class="img-fluid rounded border shadow-sm" style="max-height: 250px; object-fit: contain; width: 100%;">
+                                </div>
+
+                                <!-- Detection Result -->
+                                <div v-if="ultimoResultado" class="alert alert-success border-0 shadow-sm p-4 mt-3 fade-in" style="background-color: #ecfdf5; border-radius: 12px;">
+                                    <h5 class="alert-heading fw-bold d-flex align-items-center gap-2 mb-3" style="color: #065f46;">
+                                        <i class="bi bi-check-circle-fill" style="color: #10b981;"></i>
+                                        🎯 Matrícula Detectada:
+                                    </h5>
+                                    <hr class="my-2" style="border-color: rgba(16, 185, 129, 0.2);">
+
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mt-3">
+                                        <div>
+                                            <span class="text-muted small d-block mb-1">Valor detectado:</span>
+                                            <div class="plate-badge">{{ ultimoResultado.matrícula }}</div>
+                                        </div>
+                                        <div>
+                                            <span class="text-muted small d-block mb-1">Precisión de IA:</span>
+                                            <span class="confidence-indicator">
+                                                <span class="dot-indicator dot-green"></span>
+                                                <span class="fw-bold" style="color: #065f46; font-size: 1.05rem;">{{ ultimoResultado.precisión_ia }}</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Registro en Tiempo Real -->
+                    <div class="col-lg-7 col-12">
+                        <div class="premium-card">
+                            <div class="premium-card-header d-flex justify-content-between align-items-center">
+                                <h3 class="premium-card-title">
+                                    <i class="bi bi-database text-primary"></i>
+                                    📊 Registro en Tiempo Real (PostgreSQL)
+                                </h3>
+                                <button @click="cargarHistorial" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2" style="border-radius: 8px;" :disabled="cargandoHistorial">
+                                    <i class="bi bi-arrow-clockwise" :class="{ 'spin-animation': cargandoHistorial }"></i>
+                                    <span>Actualizar</span>
+                                </button>
+                            </div>
+                            <div class="premium-card-body p-0">
+                                <div class="table-container">
+                                    <table class="premium-table">
+                                        <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Vehículo</th>
+                                            <th>Matrícula Detectada</th>
+                                            <th>Precisión IA</th>
+                                            <th>Fecha y Hora</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-if="cargandoHistorial && historial.length === 0">
+                                            <td colspan="5" class="text-center text-muted py-5">
+                                                <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                                                Conectando con la base de datos...
+                                            </td>
+                                        </tr>
+                                        <tr v-if="!cargandoHistorial && historial.length === 0">
+                                            <td colspan="5" class="text-center text-warning py-5">
+                                                <i class="bi bi-exclamation-triangle-fill fs-3 mb-2 d-block text-warning"></i>
+                                                No hay placas registradas en el contenedor.
+                                            </td>
+                                        </tr>
+                                        <tr v-for="registro in historial" :key="registro.id" class="fade-in">
+                                            <td class="fw-bold" style="color: var(--text-muted);"># {{ registro.id }}</td>
+                                            <td>
+                                                <img v-if="registro.imagen" :src="registro.imagen" class="vehicle-thumbnail" @error="registro.imagen = null">
+                                                <div v-else class="vehicle-thumbnail-placeholder">
+                                                    <i class="bi bi-car-front"></i>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="plate-badge">{{ registro.placa }}</div>
+                                            </td>
+                                            <td>
+                                                    <span class="confidence-indicator">
+                                                        <span class="dot-indicator" :class="obtenerClaseConfianza(registro.confianza)"></span>
+                                                        <span class="fw-bold" :class="obtenerClaseTextoConfianza(registro.confianza)">{{ registro.confianza }}%</span>
+                                                    </span>
+                                            </td>
+                                            <td style="color: var(--text-muted); font-size: 0.8rem;">
+                                                {{ registro.fecha }}
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- VIEW: GUIA DE DESPLIEGUE -->
+            <div v-if="vistaActual === 'guia'" class="row justify-content-center fade-in">
+                <div class="col-lg-10 col-12">
+                    <div class="premium-card">
+                        <div class="premium-card-header">
+                            <h3 class="premium-card-title">
+                                <i class="bi bi-book text-primary"></i>
+                                📖 Guía de Entorno y Despliegue Técnico
+                            </h3>
+                        </div>
+                        <div class="premium-card-body p-4">
+                            <p class="text-muted mb-4">
+                                Sigue estas instrucciones secuenciales para inicializar el backend de Inteligencia Artificial y la base de datos distribuida en cualquier entorno local que cuente con <strong>Visual Studio Code</strong>.
+                            </p>
+
+                            <h5 class="fw-bold text-primary mb-3">1. Prerrequisitos de Software</h5>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <div class="p-3 rounded-3 h-100 guide-step-card d-flex gap-3">
+                                        <div class="fs-2 text-primary">
+                                            <i class="bi bi-box-seam-fill"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">Docker Desktop</h6>
+                                            <p class="small text-muted mb-0">Debe estar abierto y en ejecución para gestionar el clúster de PostgreSQL.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 rounded-3 h-100 guide-step-card d-flex gap-3" style="border-left-color: #f59e0b !important;">
+                                        <div class="fs-2 text-warning">
+                                            <i class="bi bi-filetype-py"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">Python 3.11 / 3.12 / 3.13</h6>
+                                            <p class="small text-muted mb-0">Requerido para interpretar la lógica y las redes neuronales.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h5 class="fw-bold text-primary mb-3">2. Extensiones Mandatorias en VS Code</h5>
+                            <p class="small text-muted mb-3">Instala estas herramientas desde el Marketplace de extensiones de VS Code (Ctrl+Shift+X):</p>
+                            <div class="list-group mb-4 shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                                <div class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3">
+                                    <div class="text-primary fs-3">
+                                        <i class="bi bi-file-earmark-code-fill"></i>
+                                    </div>
+                                    <div>
+                                        <strong class="d-block">Python <span class="text-muted fw-normal"><i>(Microsoft)</i></span></strong>
+                                        <span class="small text-muted">Habilita el autocompletado y análisis de sintaxis de Python.</span>
+                                    </div>
+                                </div>
+                                <div class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3">
+                                    <div class="text-success fs-3">
+                                        <i class="bi bi-globe"></i>
+                                    </div>
+                                    <div>
+                                        <strong class="d-block">Live Server <span class="text-muted fw-normal"><i>(Ritwick Dey)</i></span></strong>
+                                        <span class="small text-muted">Permite renderizar y refrescar este archivo HTML de forma automática.</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h5 class="fw-bold text-primary mb-3">3. Secuencia de Comandos en Consola</h5>
+                            <p class="small text-muted mb-3">Abre una terminal integrada en VS Code (Ctrl+`) en la raíz del proyecto y ejecuta en orden:</p>
+
+                            <div class="bg-dark text-light p-4 rounded-3 shadow-sm mb-4 font-monospace small guide-code-block">
+                                <span class="text-warning"># Paso A: Levantar e inicializar la bóveda de datos aislada</span><br>
+                                <span class="text-info">docker compose up -d</span><br><br>
+
+                                <span class="text-warning"># Paso B: Construir el entorno virtual de aislamiento</span><br>
+                                <span class="text-info">python -m venv venv</span><br><br>
+
+                                <span class="text-warning"># Paso C: Activar el entorno virtual (Elige según tu terminal)</span><br>
+                                <span class="text-info"># Si usas Windows PowerShell:</span> <span class="text-success">.\venv\Scripts\Activate.ps1</span><br>
+                                <span class="text-info"># Si usas Windows Git Bash / Linux:</span> <span class="text-success">source venv/bin/activate</span><br><br>
+
+                                <span class="text-warning"># Paso D: Instalar ráfaga de dependencias y modelos (YOLO, EasyOCR, FastAPI)</span><br>
+                                <span class="text-info">pip install -r requirements.txt</span><br><br>
+
+                                <span class="text-warning"># Paso E: Lanzar el servidor web ASGI en tiempo real</span><br>
+                                <span class="text-info">uvicorn main:app --reload</span>
+                            </div>
+
+                            <div class="alert alert-warning border-0 p-3 shadow-sm d-flex gap-3 align-items-start" style="background-color: #fffbeb; border-radius: 12px; color: #78350f;">
+                                <div class="fs-4 text-warning">
+                                    <i class="bi bi-info-circle-fill"></i>
+                                </div>
+                                <div>
+                                    <strong class="d-block mb-1">Nota de Ejecución:</strong>
+                                    Al procesar la primera imagen, el sistema descargará de forma automatizada los pesos de la red neuronal convolucional de <strong>YOLOv8 Nano</strong> (<code>yolov8n.pt</code>). Por favor, asegúrate de contar con una conexión a internet activa durante la primera prueba.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>
+    const { createApp } = Vue;
+
+    createApp({
+        data() {
+            return {
+                vistaActual: 'dashboard',
+                archivoSeleccionado: null,
+                vistaPrevia: null,
+                estaProcesando: false,
+                ultimoResultado: null,
+                historial: [],
+                cargandoHistorial: false
+            }
+        },
+        computed: {
+            fechaFormateada() {
+                const opciones = { day: 'numeric', month: 'long', year: 'numeric' };
+                return new Date().toLocaleDateString('es-ES', opciones);
+            }
+        },
+        methods: {
+            manejarSubidaImagen(evento) {
+                const archivo = evento.target.files[0];
+                if (archivo) {
+                    this.archivoSeleccionado = archivo;
+                    this.vistaPrevia = URL.createObjectURL(archivo);
+                    this.ultimoResultado = null;
+                }
+            },
+            async procesarImagen() {
+                if (!this.archivoSeleccionado) return alert("Por favor, selecciona una imagen primero.");
+
+                this.estaProcesando = true;
+                const formData = new FormData();
+                formData.append("imagen", this.archivoSeleccionado);
+
+                try {
+                    const respuesta = await fetch("http://127.0.0.1:8000/procesar-placa", {
+                        method: "POST",
+                        body: formData
+                    });
+                    const datos = await respuesta.json();
+
+                    if (datos.estado === "Éxito") {
+                        this.ultimoResultado = datos.datos_alpr;
+                        this.cargarHistorial(); // Refresca automáticamente la lista
+                    } else {
+                        alert("Error: " + (datos.error || "No se pudo procesar la placa."));
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert("Error crítico al conectar con el servidor backend de FastAPI.");
+                } finally {
+                    this.estaProcesando = false;
+                }
+            },
+            async cargarHistorial() {
+                this.cargandoHistorial = true;
+                try {
+                    const respuesta = await fetch("http://127.0.0.1:8000/historial");
+                    this.historial = await respuesta.json();
+                } catch (error) {
+                    console.error("Error al traer historial:", error);
+                } finally {
+                    this.cargandoHistorial = false;
+                }
+            },
+            obtenerClaseConfianza(confianza) {
+                if (confianza >= 85) return 'dot-green';
+                if (confianza >= 60) return 'dot-yellow';
+                return 'dot-red';
+            },
+            obtenerClaseTextoConfianza(confianza) {
+                if (confianza >= 85) return 'text-success';
+                if (confianza >= 60) return 'text-warning';
+                return 'text-danger';
+            }
+        },
+        mounted() {
+            this.cargarHistorial();
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
